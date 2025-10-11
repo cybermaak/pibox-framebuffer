@@ -2,3 +2,4 @@ pibox-framebuffer
 *.sock
 output
 main
+.vscode

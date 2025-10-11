@@ -20,13 +20,29 @@ Alternatively, install it as a service:
     systemctl enable pibox-framebuffer
 
 ## Usage
-### Build and run the docker image
+### Pull latest image and run container
 
-    sudo ./build.sh
-    sudo docker run -d --privileged \
+     sudo docker run -d --privileged  -p 2019:2019 \
         --device=/dev/mem --device=/dev/gpiomem --device=/dev/spidev0.0 --device=/dev/spidev0.1 \
-        -p 2019:2019 --name pibox-framebuffer cybermaak/pibox-framebuffer 
+        --name pibox-framebuffer  ghcr.io/cybermaak/pibox-framebuffer:latest
 
+#### Or docker compose
+```
+version: '3.8'
+services:
+  pibox-framebuffer:
+    image: ghcr.io/cybermaak/pibox-framebuffer:latest
+    container_name: pibox-framebuffer
+    restart: always
+    privileged: true
+    devices:
+      - /dev/mem:/dev/mem
+      - /dev/gpiomem:/dev/gpiomem
+      - /dev/spidev0.0:/dev/spidev0.0
+      - /dev/spidev0.1:/dev/spidev0.1
+    ports:
+      - "2019:2019"
+```
 
 ### Drawing an image
 
@@ -34,9 +50,20 @@ Alternatively, install it as a service:
 
 NOTE: Other text and graphics endpoints were supported in old versions, but for the sake of this code's simplicity, we now recommend updating to this version, creating an image using something like the NodeJS [Canvas](https://www.npmjs.com/package/canvas) package, and then then flushing it to the screen using the above endpoint. This new version uses SPI and is far more stable than the framebuffer kernel modules, which can inadvertently redirect console output to the LCD.
 
+
+
+
 ## Installing for development
     # Build the binary
     ./go-build.sh
 
     # Run server
     ./pibox-framebuffer
+
+### Build and run the docker image locally
+
+    sudo ./build.sh
+    sudo docker run -d --privileged \
+        --device=/dev/mem --device=/dev/gpiomem --device=/dev/spidev0.0 --device=/dev/spidev0.1 \
+        -p 2019:2019 --name pibox-framebuffer cybermaak/pibox-framebuffer 
+
