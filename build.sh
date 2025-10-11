@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TAG="kubesail/pibox-framebuffer:v$(cat VERSION.txt)"
+TAG="cybermaak/pibox-framebuffer:v$(cat VERSION.txt)"
 
 # Enable docker experimental mode:
 #  - echo '{ "experimental": true }' > /etc/docker/daemon.json
@@ -22,7 +22,7 @@ mkdir -p output
 
 DOCKER_BUILDKIT=1 ${BUILDX_PREFIX} build \
   --pull \
-  --platform "linux/amd64,linux/arm64" \
+  --platform "linux/arm64" \
   --build-arg BUILD_VERSION="$(cat VERSION.txt)" \
   -t ${TAG} \
   -o output/ .

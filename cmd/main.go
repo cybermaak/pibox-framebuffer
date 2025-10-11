@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -53,6 +54,16 @@ func main() {
 		os.Exit(0)
 	}
 
+	health := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		response := map[string]string{
+			"status": "healthy",
+			"service": "pibox-framebuffer",
+		}
+		json.NewEncoder(w).Encode(response)
+	}
+
 	// http.HandleFunc("/rgb", buffer.RGB)
 	http.HandleFunc("/image", buffer.DrawImage)
 	// http.HandleFunc("/gif", buffer.DrawGIF)
@@ -60,6 +71,7 @@ func main() {
 	// http.HandleFunc("/stats/on", buffer.EnableStats)
 	// http.HandleFunc("/qr", buffer.QR)
 	// http.HandleFunc("/disk-stats", buffer.DiskStats)
+	http.HandleFunc("/health", health)
 	http.HandleFunc("/exit", exit)
 
 	fmt.Printf("PiBox Framebuffer listening on %s:%s\n", listenHost, listenPort)

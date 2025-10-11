@@ -15,9 +15,9 @@ GOPATH=$(go env GOPATH)
 $GOPATH/bin/statik -src=img -f
 
 if [[ "${TARGETARCH}" == "arm64" ]]; then
-  CC="aarch64-linux-gnu-gcc" go build -o "${BINARY_PATH}" ./cmd/main.go
+  CC="aarch64-linux-gnu-gcc" go build -o "${BINARY_PATH}/" ./cmd/main.go
 else
-  go build -o "${BINARY_PATH}" ./cmd/main.go
+  go build -o "${BINARY_PATH}/" ./cmd/main.go
 fi
 
-cp -v main pibox-framebuffer
+cp -v ${BINARY_PATH}/main ${BINARY_PATH}/pibox-framebuffer
