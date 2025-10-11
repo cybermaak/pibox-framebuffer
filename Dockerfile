@@ -19,18 +19,16 @@ RUN ./go-build.sh
 
 # create server image
 # Use Debian slim image for ARM64 (glibc compatible)
-#FROM debian:bookworm-slim
-FROM alpine
+FROM debian:bookworm-slim
 
 ARG TARGETARCH
 ARG BUILD_VERSION
 ENV BINARY_PATH="/pibox-framebuffer-linux-${TARGETARCH}-v${BUILD_VERSION}"
 
-RUN apk add --no-cache curl shadow
 # Install necessary runtime dependencies
-#RUN apt-get update && apt-get install -y \
-    #curl \
-    #&& rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user for security
 RUN groupadd -g 1001 pibox && \

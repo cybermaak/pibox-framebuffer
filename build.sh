@@ -24,5 +24,4 @@ DOCKER_BUILDKIT=1 ${BUILDX_PREFIX} build \
   --pull \
   --platform "linux/arm64" \
   --build-arg BUILD_VERSION="$(cat VERSION.txt)" \
-  -t ${TAG} \
-  -o output/ .
+  -t ${TAG} .
