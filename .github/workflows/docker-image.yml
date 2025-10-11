@@ -15,4 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: build.sh
+      run: docker build --platform "linux/arm64" --build-arg BUILD_VERSION="$(cat VERSION.txt)" -t "cybermaak/pibox-framebuffer:v$(cat VERSION.txt)" -o output/ .
