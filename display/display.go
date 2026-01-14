@@ -43,10 +43,6 @@ func init() {
 
 }
 
-func Init() (*Display, error) {
-	return InitWithSize(240, 240, 0, 0)
-}
-
 func InitWithSize(width, height, rowOffsetCfg, rowOffset int16) (*Display, error) {
 	var err error
 	once.Do(func() {

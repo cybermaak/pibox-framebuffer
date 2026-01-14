@@ -27,9 +27,6 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-const DefaultScreenWidth = 240
-const DefaultScreenHeight = 240
-
 type PiboxFrameBuffer struct {
 	config *Config
 
@@ -248,7 +245,6 @@ func (b *PiboxFrameBuffer) TextRequest(w http.ResponseWriter, req *http.Request)
 }
 
 func (b *PiboxFrameBuffer) TextOnContext(dc *gg.Context, x float64, y float64, size float64, content string, bold bool, align gg.Align) {
-	const S = 240
 	// dc.SetRGB(float64(c.R), float64(c.G), float64(c.B))
 	if bold {
 		if err := dc.LoadFontFace("/usr/share/fonts/truetype/piboto/Piboto-Bold.ttf", float64(size)); err != nil {
@@ -259,7 +255,7 @@ func (b *PiboxFrameBuffer) TextOnContext(dc *gg.Context, x float64, y float64, s
 			panic(err)
 		}
 	}
-	dc.DrawStringWrapped(content, x, y, 0.5, 0.5, 240, 1.5, align)
+	dc.DrawStringWrapped(content, x, y, 0.5, 0.5, float64(b.config.screenWidth), 1.5, align)
 	// dc.Clip()
 }
 

@@ -20,14 +20,6 @@ import (
 	"periph.io/x/conn/v3/spi"
 )
 
-// DefaultOpts is the recommended default options.
-var DefaultOpts = Opts{
-	W:            240,
-	H:            240,
-	RowOffsetCfg: 0,
-	RowOffset:    0,
-}
-
 // Opts defines the options for the device.
 type Opts struct {
 	W            int16
@@ -361,14 +353,21 @@ func (d *Device) DrawImage(reader io.Reader) {
 
 func (d *Device) DrawRAW(img image.Image) {
 	d.SetWindow()
-	rect := img.Bounds()
-	rgbaimg := image.NewRGBA(rect)
-	draw.Draw(rgbaimg, rect, img, rect.Min, draw.Src)
+
+	// Create a new RGBA image with the display dimensions
+	displayImg := image.NewRGBA(image.Rect(0, 0, int(d.width), int(d.height)))
+
+	// Get the source image bounds
+	srcBounds := img.Bounds()
+
+	// Scale the image to fit the display while maintaining aspect ratio
+	// For now, we'll just draw the image centered or stretched to fit
+	draw.Draw(displayImg, displayImg.Bounds(), img, srcBounds.Min, draw.Src)
 
 	np := []uint8{}
 	for i := 0; i < int(d.width); i++ {
 		for j := 0; j < int(d.height); j++ {
-			rgba := rgbaimg.At(int(d.width)-i, j).(color.RGBA)
+			rgba := displayImg.At(int(d.width)-1-i, j).(color.RGBA)
 			c565 := RGBATo565(rgba)
 			c1 := uint8(c565)
 			c2 := uint8(c565 >> 8)
@@ -377,6 +376,10 @@ func (d *Device) DrawRAW(img image.Image) {
 	}
 
 	for i := 0; i < len(np); i += 4096 {
-		d.SendData(np[i : i+4096])
+		end := i + 4096
+		if end > len(np) {
+			end = len(np)
+		}
+		d.SendData(np[i:end])
 	}
 }
