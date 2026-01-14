@@ -28,12 +28,18 @@ The following environment variables can be used to configure the display:
 - `DISK_MOUNT_PREFIX` - Path prefix for disk monitoring (default: /var/lib/rancher)
 - `SCREEN_WIDTH` - Display width in pixels (default: 240)
 - `SCREEN_HEIGHT` - Display height in pixels (default: 240)
+- `SCREEN_ROTATION` - Display rotation in degrees (default: 270). Valid values: 0, 90, 180, 270
+- `ROW_OFFSET_CFG` - Row offset configuration for display alignment (default: 0)
+- `ROW_OFFSET` - Row offset for display alignment (default: 0)
 
-### Example with custom screen size
+### Example with custom screen size, rotation, and offsets
 
 ```bash
 export SCREEN_WIDTH=320
 export SCREEN_HEIGHT=240
+export SCREEN_ROTATION=90
+export ROW_OFFSET_CFG=10
+export ROW_OFFSET=5
 ./pibox-framebuffer
 ```
 
@@ -41,7 +47,8 @@ Or with Docker:
 
 ```bash
 sudo docker run -d --privileged -p 2019:2019 \
-    -e SCREEN_WIDTH=320 -e SCREEN_HEIGHT=240 \
+    -e SCREEN_WIDTH=320 -e SCREEN_HEIGHT=240 -e SCREEN_ROTATION=90 \
+    -e ROW_OFFSET_CFG=10 -e ROW_OFFSET=5 \
     --device=/dev/mem --device=/dev/gpiomem --device=/dev/spidev0.0 --device=/dev/spidev0.1 \
     --name pibox-framebuffer ghcr.io/cybermaak/pibox-framebuffer:latest
 ```
@@ -65,6 +72,9 @@ services:
     environment:
       - SCREEN_WIDTH=240
       - SCREEN_HEIGHT=240
+      - SCREEN_ROTATION=270
+      - ROW_OFFSET_CFG=0
+      - ROW_OFFSET=0
       # - HOST=0.0.0.0  # Uncomment to listen on all interfaces
       # - PORT=2019     # Uncomment to change port
     devices:

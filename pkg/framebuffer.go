@@ -37,12 +37,32 @@ type PiboxFrameBuffer struct {
 	enableStats bool
 }
 
+func (b *PiboxFrameBuffer) getRotation() display.Rotation {
+	switch b.config.rotation {
+	case "0":
+		return display.NO_ROTATION
+	case "90":
+		return display.ROTATION_90
+	case "180":
+		return display.ROTATION_180
+	case "270":
+		return display.ROTATION_270
+	default:
+		return display.ROTATION_270 // Default fallback
+	}
+}
+
 func (b *PiboxFrameBuffer) openFrameBuffer() *display.Display {
-	fb, err := display.InitWithSize(int16(b.config.screenWidth), int16(b.config.screenHeight))
+	fb, err := display.InitWithSize(
+		int16(b.config.screenWidth),
+		int16(b.config.screenHeight),
+		int16(b.config.rowOffsetCfg),
+		int16(b.config.rowOffset),
+	)
 	if err != nil {
 		panic(err)
 	}
-	fb.Rotate(display.ROTATION_270)
+	fb.Rotate(b.getRotation())
 	// defer fb.Close()
 	return fb
 }
@@ -445,11 +465,14 @@ func (b *PiboxFrameBuffer) Stats() {
 	b.flushTextToScreen(dc)
 }
 
-func NewFrameBuffer(screenWidth int, screenHeight int, enableStats bool, diskMountPrefix string) *PiboxFrameBuffer {
+func NewFrameBuffer(screenWidth int, screenHeight int, rotation string, rowOffsetCfg int, rowOffset int, enableStats bool, diskMountPrefix string) *PiboxFrameBuffer {
 	buf := &PiboxFrameBuffer{
 		config: &Config{
 			screenWidth:     screenWidth,
 			screenHeight:    screenHeight,
+			rotation:        rotation,
+			rowOffsetCfg:    rowOffsetCfg,
+			rowOffset:       rowOffset,
 			diskMountPrefix: diskMountPrefix,
 		},
 		enableStats: enableStats,

@@ -22,6 +22,9 @@ const DefaultListenHost = "localhost"
 const DefaultListenPort = "2019"
 const DefaultScreenWidth = 240
 const DefaultScreenHeight = 240
+const DefaultRotation = "270" // ROTATION_270 for backward compatibility
+const DefaultRowOffsetCfg = 0
+const DefaultRowOffset = 0
 
 func main() {
 	listenHost, ok := os.LookupEnv("HOST")
@@ -54,7 +57,34 @@ func main() {
 		}
 	}
 
-	buffer := pfb.NewFrameBuffer(screenWidth, screenHeight, true, diskMountPrefix)
+	// Read rotation from environment variable
+	rotationStr := DefaultRotation
+	if envRotation, ok := os.LookupEnv("SCREEN_ROTATION"); ok {
+		// Validate rotation value
+		switch envRotation {
+		case "0", "90", "180", "270":
+			rotationStr = envRotation
+		default:
+			fmt.Fprintf(os.Stderr, "Invalid SCREEN_ROTATION value '%s'. Valid values: 0, 90, 180, 270. Using default: %s\n", envRotation, DefaultRotation)
+		}
+	}
+
+	// Read row offset configuration from environment variables
+	rowOffsetCfg := DefaultRowOffsetCfg
+	if offsetStr, ok := os.LookupEnv("ROW_OFFSET_CFG"); ok {
+		if offset, err := strconv.Atoi(offsetStr); err == nil {
+			rowOffsetCfg = offset
+		}
+	}
+
+	rowOffset := DefaultRowOffset
+	if offsetStr, ok := os.LookupEnv("ROW_OFFSET"); ok {
+		if offset, err := strconv.Atoi(offsetStr); err == nil {
+			rowOffset = offset
+		}
+	}
+
+	buffer := pfb.NewFrameBuffer(screenWidth, screenHeight, rotationStr, rowOffsetCfg, rowOffset, true, diskMountPrefix)
 
 	err := rpio.Open()
 	if err == nil {

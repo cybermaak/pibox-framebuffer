@@ -22,14 +22,18 @@ import (
 
 // DefaultOpts is the recommended default options.
 var DefaultOpts = Opts{
-	W: 240,
-	H: 240,
+	W:            240,
+	H:            240,
+	RowOffsetCfg: 0,
+	RowOffset:    0,
 }
 
 // Opts defines the options for the device.
 type Opts struct {
-	W int16
-	H int16
+	W            int16
+	H            int16
+	RowOffsetCfg int16
+	RowOffset    int16
 }
 
 func NewSPI(p spi.Port, dc gpio.PinOut, opts *Opts) (*Device, error) {
@@ -104,14 +108,16 @@ func (d *Device) Invert(blackOnWhite bool) {
 
 func newDev(c conn.Conn, opts *Opts, dc gpio.PinOut) (*Device, error) {
 	d := &Device{
-		c:           c,
-		dc:          dc,
-		rect:        image.Rect(0, 0, int(opts.W), int(opts.H)),
-		rotation:    NO_ROTATION,
-		width:       opts.W,
-		height:      opts.H,
-		batchLength: int32(opts.W),
-		backlight:   gpioreg.ByName("GPIO22"),
+		c:            c,
+		dc:           dc,
+		rect:         image.Rect(0, 0, int(opts.W), int(opts.H)),
+		rotation:     NO_ROTATION,
+		width:        opts.W,
+		height:       opts.H,
+		rowOffsetCfg: opts.RowOffsetCfg,
+		rowOffset:    opts.RowOffset,
+		batchLength:  int32(opts.W),
+		backlight:    gpioreg.ByName("GPIO22"),
 	}
 	d.batchLength = d.batchLength & 1
 
