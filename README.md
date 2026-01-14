@@ -19,6 +19,33 @@ Alternatively, install it as a service:
     systemctl daemon-reload
     systemctl enable pibox-framebuffer
 
+## Configuration
+
+The following environment variables can be used to configure the display:
+
+- `HOST` - Listen address (default: localhost)
+- `PORT` - Listen port (default: 2019)
+- `DISK_MOUNT_PREFIX` - Path prefix for disk monitoring (default: /var/lib/rancher)
+- `SCREEN_WIDTH` - Display width in pixels (default: 240)
+- `SCREEN_HEIGHT` - Display height in pixels (default: 240)
+
+### Example with custom screen size
+
+```bash
+export SCREEN_WIDTH=320
+export SCREEN_HEIGHT=240
+./pibox-framebuffer
+```
+
+Or with Docker:
+
+```bash
+sudo docker run -d --privileged -p 2019:2019 \
+    -e SCREEN_WIDTH=320 -e SCREEN_HEIGHT=240 \
+    --device=/dev/mem --device=/dev/gpiomem --device=/dev/spidev0.0 --device=/dev/spidev0.1 \
+    --name pibox-framebuffer ghcr.io/cybermaak/pibox-framebuffer:latest
+```
+
 ## Usage
 ### Pull latest image and run container
 
@@ -27,7 +54,7 @@ Alternatively, install it as a service:
         --name pibox-framebuffer  ghcr.io/cybermaak/pibox-framebuffer:latest
 
 #### Or docker compose
-```
+```yaml
 version: '3.8'
 services:
   pibox-framebuffer:
@@ -35,6 +62,11 @@ services:
     container_name: pibox-framebuffer
     restart: always
     privileged: true
+    environment:
+      - SCREEN_WIDTH=240
+      - SCREEN_HEIGHT=240
+      # - HOST=0.0.0.0  # Uncomment to listen on all interfaces
+      # - PORT=2019     # Uncomment to change port
     devices:
       - /dev/mem:/dev/mem
       - /dev/gpiomem:/dev/gpiomem

@@ -7,6 +7,8 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
+
 	// "time"
 
 	pfb "github.com/kubesail/pibox-framebuffer/pkg"
@@ -18,6 +20,8 @@ import (
 const DefaultDiskMountPrefix = "/var/lib/rancher"
 const DefaultListenHost = "localhost"
 const DefaultListenPort = "2019"
+const DefaultScreenWidth = 240
+const DefaultScreenHeight = 240
 
 func main() {
 	listenHost, ok := os.LookupEnv("HOST")
@@ -29,13 +33,28 @@ func main() {
 	if !ok {
 		listenPort = DefaultListenPort
 	}
-	
+
 	diskMountPrefix, ok := os.LookupEnv("DISK_MOUNT_PREFIX")
 	if !ok {
 		diskMountPrefix = DefaultDiskMountPrefix
 	}
 
-	buffer := pfb.NewFrameBuffer(pfb.DefaultScreenSize, true, diskMountPrefix)
+	// Read screen dimensions from environment variables
+	screenWidth := DefaultScreenWidth
+	if widthStr, ok := os.LookupEnv("SCREEN_WIDTH"); ok {
+		if width, err := strconv.Atoi(widthStr); err == nil && width > 0 {
+			screenWidth = width
+		}
+	}
+
+	screenHeight := DefaultScreenHeight
+	if heightStr, ok := os.LookupEnv("SCREEN_HEIGHT"); ok {
+		if height, err := strconv.Atoi(heightStr); err == nil && height > 0 {
+			screenHeight = height
+		}
+	}
+
+	buffer := pfb.NewFrameBuffer(screenWidth, screenHeight, true, diskMountPrefix)
 
 	err := rpio.Open()
 	if err == nil {
@@ -58,7 +77,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		response := map[string]string{
-			"status": "healthy",
+			"status":  "healthy",
 			"service": "pibox-framebuffer",
 		}
 		json.NewEncoder(w).Encode(response)
@@ -75,7 +94,7 @@ func main() {
 	http.HandleFunc("/exit", exit)
 
 	fmt.Printf("PiBox Framebuffer listening on %s:%s\n", listenHost, listenPort)
-	// listen on localhost only	
+	// listen on localhost only
 	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%s", listenHost, listenPort))
 	if err != nil {
 		log.Fatalf("Could not listen on %s:%s, %v", listenPort, err)

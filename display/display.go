@@ -44,6 +44,10 @@ func init() {
 }
 
 func Init() (*Display, error) {
+	return InitWithSize(240, 240)
+}
+
+func InitWithSize(width, height int16) (*Display, error) {
 	var err error
 	once.Do(func() {
 		display = &Display{}
@@ -53,7 +57,11 @@ func Init() (*Display, error) {
 		}
 		// USE GPIO9 to send data/commands
 		// https://pinout.xyz/pinout/pirate_audio_line_out#
-		display.dev, err = st7789.NewSPI(display.p.(spi.Port), gpioreg.ByName("GPIO25"), &st7789.DefaultOpts)
+		opts := &st7789.Opts{
+			W: width,
+			H: height,
+		}
+		display.dev, err = st7789.NewSPI(display.p.(spi.Port), gpioreg.ByName("GPIO25"), opts)
 	})
 
 	return display, err

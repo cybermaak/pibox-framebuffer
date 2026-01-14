@@ -19,15 +19,16 @@ import (
 
 	human "github.com/dustin/go-humanize"
 	"github.com/fogleman/gg"
+	"github.com/kubesail/pibox-framebuffer/display"
 	"github.com/rakyll/statik/fs"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/skip2/go-qrcode"
-	"github.com/kubesail/pibox-framebuffer/display"
 )
 
-const DefaultScreenSize = 240
+const DefaultScreenWidth = 240
+const DefaultScreenHeight = 240
 
 type PiboxFrameBuffer struct {
 	config *Config
@@ -36,8 +37,8 @@ type PiboxFrameBuffer struct {
 	enableStats bool
 }
 
-func (b *PiboxFrameBuffer) openFrameBuffer() (*display.Display) {
-	fb, err := display.Init()
+func (b *PiboxFrameBuffer) openFrameBuffer() *display.Display {
+	fb, err := display.InitWithSize(int16(b.config.screenWidth), int16(b.config.screenHeight))
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +98,7 @@ func (b *PiboxFrameBuffer) QR(w http.ResponseWriter, req *http.Request) {
 	//	image.Point{},
 	//	draw.Src)
 
-        fb.DrawRAW(img)
+	fb.DrawRAW(img)
 
 	fmt.Println("QR Code printed to screen")
 	b.enableStats = false
@@ -193,10 +194,10 @@ func (b *PiboxFrameBuffer) TextRequest(w http.ResponseWriter, req *http.Request)
 		content = append(content, "no content param")
 	}
 	background := query["background"]
-	dc := gg.NewContext(b.config.screenSize, b.config.screenSize)
+	dc := gg.NewContext(b.config.screenWidth, b.config.screenHeight)
 	if len(background) == 1 {
 		dc.SetHexColor(background[0])
-		dc.DrawRectangle(0, 0, 240, 240)
+		dc.DrawRectangle(0, 0, float64(b.config.screenWidth), float64(b.config.screenHeight))
 		dc.Fill()
 	}
 	c := query["color"]
@@ -211,12 +212,12 @@ func (b *PiboxFrameBuffer) TextRequest(w http.ResponseWriter, req *http.Request)
 	}
 	sizeInt, _ := strconv.Atoi(size[0])
 	x := query["x"]
-	xInt := b.config.screenSize / 2
+	xInt := b.config.screenWidth / 2
 	if len(x) > 0 {
 		xInt, _ = strconv.Atoi(x[0])
 	}
 	y := query["y"]
-	yInt := b.config.screenSize / 2
+	yInt := b.config.screenHeight / 2
 	if len(y) > 0 {
 		yInt, _ = strconv.Atoi(y[0])
 	}
@@ -315,8 +316,8 @@ func (b *PiboxFrameBuffer) Stats() {
 	}
 
 	// create new context and clear screen
-	dc := gg.NewContext(b.config.screenSize, b.config.screenSize)
-	dc.DrawRectangle(0, 0, 240, 240)
+	dc := gg.NewContext(b.config.screenWidth, b.config.screenHeight)
+	dc.DrawRectangle(0, 0, float64(b.config.screenWidth), float64(b.config.screenHeight))
 	dc.SetColor(color.RGBA{51, 51, 51, 255})
 	dc.Fill()
 
@@ -444,10 +445,11 @@ func (b *PiboxFrameBuffer) Stats() {
 	b.flushTextToScreen(dc)
 }
 
-func NewFrameBuffer(screenSize int, enableStats bool, diskMountPrefix string) *PiboxFrameBuffer {
+func NewFrameBuffer(screenWidth int, screenHeight int, enableStats bool, diskMountPrefix string) *PiboxFrameBuffer {
 	buf := &PiboxFrameBuffer{
 		config: &Config{
-			screenSize:      screenSize,
+			screenWidth:     screenWidth,
+			screenHeight:    screenHeight,
 			diskMountPrefix: diskMountPrefix,
 		},
 		enableStats: enableStats,
